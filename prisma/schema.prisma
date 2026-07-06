@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Profile {
+  id         String   @id @default(cuid())
+  userId     String   @unique @map("user_id")
+  name       String
+  skinType   String?  @map("skin_type")
+  goals      String[]
+  avatarUrl  String?  @map("avatar_url")
+  gender     String?
+  ageRange   String?  @map("age_range")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  analyses         Analysis[]
+  wardrobeAnalyses WardrobeAnalysis[]
+  chatThreads      ChatThread[]
+  clients          Client[]
+
+  @@map("profiles")
+}
+
+model Analysis {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  photoUrl      String   @map("photo_url")
+  symmetryScore Float?   @map("symmetry_score")
+  results       Json
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  regime  Regime?
+
+  @@map("analyses")
+}
+
+model WardrobeAnalysis {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  photoUrl        String   @map("photo_url")
+  recommendations Json
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("wardrobe_analyses")
+}
+
+model ChatThread {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String   @default("New Conversation")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile  Profile       @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  messages ChatMessage[]
+
+  @@map("chat_threads")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  threadId  String   @map("thread_id")
+  role      String
+  content   String
+  imageUrl  String?  @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  thread ChatThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+model Regime {
+  id         String   @id @default(cuid())
+  analysisId String   @unique @map("analysis_id")
+  amSteps    Json     @map("am_steps")
+  pmSteps    Json     @map("pm_steps")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("regimes")
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  clerkOrgId  String   @unique @map("clerk_org_id")
+  plan        String   @default("free")
+  whiteLabelSettings Json? @map("white_label_settings")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  clients Client[]
+
+  @@map("organizations")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  email     String
+  userId    String?  @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  profile      Profile?     @relation(fields: [userId], references: [userId])
+
+  @@unique([orgId, email])
+  @@map("clients")
+}
