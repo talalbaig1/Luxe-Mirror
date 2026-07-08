@@ -45,12 +45,10 @@ export function SignUpForm() {
         return;
       }
 
-      // If session is immediately available, email confirmation is disabled
       if (data.session) {
         router.push("/onboarding");
         router.refresh();
       } else {
-        // Email confirmation required
         setEmailSent(true);
       }
     } catch {
