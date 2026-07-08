@@ -57,20 +57,8 @@ export default async function ClientsPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {clients.map((client) => {
-          const typedClient = client as {
-            id: string;
-            email: string;
-            createdAt: Date;
-            profile?: {
-              name: string;
-              avatarUrl?: string | null;
-              skinType?: string | null;
-              goals: string[];
-              analyses?: Array<{ createdAt: Date; results: Record<string, unknown> }>;
-            } | null;
-          };
-          const profile = typedClient.profile;
+        {clients.map((client: Awaited<ReturnType<typeof getClients>>[number]) => {
+          const profile = client.profile;
             const lastAnalysis = profile?.analyses?.[0];
             const results = lastAnalysis?.results as { faceShape?: string; skinTone?: string } | null;
             return (
