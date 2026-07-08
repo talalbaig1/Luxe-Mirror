@@ -1,4 +1,4 @@
-import { getAuthUserId, getAuthContext, getCurrentUserName } from "@/lib/auth";
+import { getAuthUserId } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserPlus } from "lucide-react";
@@ -21,7 +21,6 @@ export default async function TeamPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Use your Clerk organization dashboard to invite team members and manage roles.
             Client invitations via email are coming in the next release.
           </p>
         </CardContent>

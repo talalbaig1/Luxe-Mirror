@@ -1,22 +1,32 @@
-import { isClerkEnabled, DEV_USER_ID } from "@/lib/config";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function getAuthUserId(): Promise<string | null> {
-  if (!isClerkEnabled()) return DEV_USER_ID;
-  const { auth } = await import("@clerk/nextjs/server");
-  const { userId } = await auth();
-  return userId;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getAuthContext(): Promise<{ userId: string | null; orgId: string | null }> {
-  if (!isClerkEnabled()) return { userId: DEV_USER_ID, orgId: null };
-  const { auth } = await import("@clerk/nextjs/server");
-  const { userId, orgId } = await auth();
-  return { userId, orgId: orgId ?? null };
+  const userId = await getAuthUserId();
+  return { userId, orgId: null };
 }
 
 export async function getCurrentUserName(): Promise<string> {
-  if (!isClerkEnabled()) return "Dev User";
-  const { currentUser } = await import("@clerk/nextjs/server");
-  const user = await currentUser();
-  return user?.fullName ?? user?.firstName ?? "User";
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return "User";
+    return (
+      user.user_metadata?.full_name ??
+      user.user_metadata?.name ??
+      user.email?.split("@")[0] ??
+      "User"
+    );
+  } catch {
+    return "User";
+  }
 }
